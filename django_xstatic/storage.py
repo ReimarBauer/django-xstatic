@@ -13,17 +13,22 @@ class XStaticStorage(FileSystemStorage):
         """
         Returns a static file storage if available in the given xstatic package
         """
-        module, attr = package.rsplit('.', 1)
-        try:
-            mod = import_module(module)
-        except ImportError as e:
-            raise ImproperlyConfigured('Error importing module %s: "%s"' %
-                                       (module, e))
-        try:
-            package = getattr(mod, attr)
-        except AttributeError:
-            raise ImproperlyConfigured('Module "%s" does not contains a "%s" '
-                                       'package.' % (module, attr))
-        location = package.BASE_DIR
+        if package == 'xstatic.pkg':
+            pkg = __import__('xstatic.pkg')
+            location = pkg.pkg.__path__[0]
+        else:
+            module, attr = package.rsplit('.', 1)
+            try:
+                mod = import_module(module)
+            except ImportError as e:
+                raise ImproperlyConfigured('Error importing module %s: "%s"' %
+                                           (module, e))
+            try:
+                package = getattr(mod, attr)
+            except AttributeError:
+                raise ImproperlyConfigured('Module "%s" does not contains a "%s" '
+                                           'package.' % (module, attr))
+
+            location = package.BASE_DIR
         super(XStaticStorage, self).__init__(location, *args, **kwargs)
 
